@@ -1,0 +1,19 @@
+!!! 5
+%html
+  %head
+    %title Tick-Tack-Toe
+  %script{:src => "jquery-1.7.1.min.js", :type => "text/javascript"}
+  :javascript
+    $(function() {
+      console.log('ready') 
+    })
+  %style{:type => "text/css"}
+    :sass
+      body
+        background-color: #EEE
+      canvas
+        border: 3px solid #000
+        background-color: #FFF
+  %body
+  %h1 Tick-Tack-Toe
+  %canvas{:width => 300, :height => 300}
