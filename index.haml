@@ -3,10 +3,6 @@
   %head
     %title Tick-Tack-Toe
   %script{:src => "jquery-1.7.1.min.js", :type => "text/javascript"}
-  :javascript
-    $(function() {
-      console.log('ready') 
-    })
   %style{:type => "text/css"}
     :sass
       body
@@ -14,6 +10,26 @@
       canvas
         border: 3px solid #000
         background-color: #FFF
+  :javascript
+    $(function() {
+      var ctx = $('canvas')[0].getContext('2d')
+
+      ctx.lineWidth = 20
+      ctx.strokeStyle = "#000"
+      ctx.lineCap = "round"
+
+      var lines = [[100, 20, 100, 280],
+                   [200, 20, 200, 280],
+                   [20, 100, 280, 100],
+                   [20, 200, 280, 200]]
+
+      $.each(lines, function(i, l) {
+        ctx.beginPath()
+        ctx.moveTo(l[0], l[1])
+        ctx.lineTo(l[2], l[3])
+        ctx.stroke()
+      })
+    })
   %body
   %h1 Tick-Tack-Toe
   %canvas{:width => 300, :height => 300}
