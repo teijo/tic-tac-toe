@@ -58,16 +58,17 @@
         })
       }
 
-
       var sock = null
       if (typeof(WebSocket) == 'undefined')
         sock = MozWebSocket
       else
         sock = WebSocket
 
+      dbg('Connecting ...')
       var ws = new sock("ws://localhost:10101")
 
       ws.onopen = function() {
+        dbg('Connected.')
       }
 
       ws.onmessage = function (e) { 

@@ -22,7 +22,25 @@ puts("Server is running at port %d" % server.port)
 connections = []
 history = [nil] * 20
 
-game = [[],[],[]]
+game = [[nil, nil, nil],[nil, nil, nil],[nil, nil, nil]]
+
+def reset(g)
+  puts("Game reset")
+  g.each { |row| row.fill(nil) }
+end
+
+def isOver(g)
+  for row in g
+    for cell in row
+      if cell == nil
+        return false
+      end
+    end
+  end
+  return true
+end
+
+reset(game)
 
 server.run() do |ws|
   begin
@@ -46,11 +64,17 @@ server.run() do |ws|
       puts("Received: #{data}")
 
       move = JSON.parse(data)
-      game[move['x']][move['y']] = move['marker']
+      if game[move['x']][move['y']] == nil
+        game[move['x']][move['y']] = move['marker']
+      end
       data = game.to_json()
 
       for conn in connections
         conn.push(data)
+      end
+
+      if isOver(game)
+        reset(game)
       end
 
       history.push(data)
