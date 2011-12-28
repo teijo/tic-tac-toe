@@ -64,7 +64,14 @@
       if (marker && state[1][1] == marker && state[2][0] == marker)
         return true
 
-      return false
+      // full check, tie
+      over = true
+      for (var i = 0; i < 3; i++)
+        for (var j = 0; j < 3; j++)
+          if (!state[i][j])
+            over = false
+
+      return over
     }
 
     if (!isOver(
@@ -114,6 +121,12 @@
        [ 0 , 0 ,'x'],
        [ 0 , 0 ,'x']]
       )) console.log('fail 8')
+
+    if (!isOver(
+      [['x','x','o'],
+       ['o','o','x'],
+       ['x','o','x']]
+      )) console.log('fail 9')
 
     $(function() {
       var canvas = $('canvas')
