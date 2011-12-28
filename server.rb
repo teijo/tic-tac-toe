@@ -30,14 +30,109 @@ def reset(g)
 end
 
 def isOver(g)
+             #rows
+  vectors = [[[0,0],[0,1],[0,2]],
+             [[1,0],[1,1],[1,2]],
+             [[2,0],[2,1],[2,2]],
+             #cols
+             [[0,0],[1,0],[2,0]],
+             [[0,1],[1,1],[2,1]],
+             [[0,2],[1,2],[2,2]],
+             #diagonals
+             [[0,0],[1,1],[2,2]],
+             [[2,0],[1,1],[0,2]]]
+
+  for v in vectors
+    a = g[v[0][0]][v[0][1]]
+    b = g[v[1][0]][v[1][1]]
+    c = g[v[2][0]][v[2][1]]
+    if (a == 'x' or a == 'o') and a == b and a == c
+      return true
+    end
+  end
+
+  over = true
   for row in g
     for cell in row
-      if cell == nil
-        return false
+      if cell == nil or cell == 0
+        over = false
       end
     end
   end
-  return true
+
+  return over
+end
+
+if !isOver(
+  [['x','x','x'],
+   [ 0 , 0 , 0 ],
+   [ 0 , 0 , 0 ]]
+  )
+    puts('fail 1')
+end
+
+if !isOver(
+  [[ 0 , 0 , 0 ],
+   ['x','x','x'],
+   [ 0 , 0 , 0 ]]
+  )
+    puts('fail 2')
+end
+
+if !isOver(
+  [[ 0 , 0 , 0 ],
+   [ 0 , 0 , 0 ],
+   ['x','x','x']]
+  )
+    puts('fail 3')
+end
+
+if !isOver(
+  [['x', 0 , 0 ],
+   [ 0 ,'x', 0 ],
+   [ 0 , 0 ,'x']]
+  )
+    puts('fail 4')
+end
+
+if !isOver(
+  [[ 0 , 0 ,'x'],
+   [ 0 ,'x', 0 ],
+   ['x', 0 , 0 ]]
+  )
+    puts('fail 5')
+end
+
+if !isOver(
+  [['x', 0 , 0 ],
+   ['x', 0 , 0 ],
+   ['x', 0 , 0 ]]
+  )
+    puts('fail 6')
+end
+
+if !isOver(
+  [[ 0 ,'x', 0 ],
+   [ 0 ,'x', 0 ],
+   [ 0 ,'x', 0 ]]
+  )
+    puts('fail 7')
+end
+
+if !isOver(
+  [[ 0 , 0 ,'x'],
+   [ 0 , 0 ,'x'],
+   [ 0 , 0 ,'x']]
+  )
+    puts('fail 8')
+end
+
+if !isOver(
+  [['x','o','x'],
+   ['o','o','x'],
+   ['x','x','o']]
+  )
+    puts('fail 9')
 end
 
 reset(game)
