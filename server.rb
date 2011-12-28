@@ -3,39 +3,63 @@
 
 require 'rubygems'
 require 'json'
+require "thread"
 
 $LOAD_PATH << File.dirname(__FILE__) + "/lib"
 require "web_socket"
 
 Thread.abort_on_exception = true
-# WebSocket.debug = true
 
 if ARGV.size != 2
-  $stderr.puts("Usage: ruby sample/echo_server.rb ACCEPTED_DOMAIN PORT")
+  $stderr.puts("Usage: ruby sample/chat_server.rb ACCEPTED_DOMAIN PORT")
   exit(1)
 end
 
-game = [[],[],[]]
-
 server = WebSocketServer.new(
-  :accepted_domains => ["*"],
+  :accepted_domains => [ARGV[0]],
   :port => ARGV[1].to_i())
 puts("Server is running at port %d" % server.port)
+connections = []
+history = [nil] * 20
+
+game = [[],[],[]]
+
 server.run() do |ws|
-  puts("Connection accepted")
-  puts("Path: #{ws.path}, Origin: #{ws.origin}")
-  if ws.path == "/"
+  begin
+    
+    puts("Connection accepted")
     ws.handshake()
+    que = Queue.new()
+    connections.push(que)
+
+    ws.send(game.to_json())
+    
+    thread = Thread.new() do
+      while true
+        message = que.pop()
+        ws.send(message)
+        puts("Sent: #{message}")
+      end
+    end
+    
     while data = ws.receive()
-      printf("Received: %p\n", data)
+      puts("Received: #{data}")
+
       move = JSON.parse(data)
       game[move['x']][move['y']] = move['marker']
       data = game.to_json()
-      ws.send(data)
-      printf("Sent: %p\n", data)
+
+      for conn in connections
+        conn.push(data)
+      end
+
+      history.push(data)
+      history.shift()
     end
-  else
-    ws.handshake("404 Not Found")
+    
+  ensure
+    connections.delete(que)
+    thread.terminate() if thread
+    puts("Connection closed")
   end
-  puts("Connection closed")
 end
