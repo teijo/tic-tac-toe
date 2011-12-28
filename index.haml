@@ -20,6 +20,101 @@
       $('#terminal').prepend(data+'\n')
     }
 
+    function isOver(state) {
+      var over
+
+      // row check
+      for (var i = 0; i < 3; i++) {
+        var marker = state[i][0]
+        if (!marker)
+          continue
+
+        over = true
+        for (var j = 1; j < 3; j++) {
+          if (state[i][j] != marker)
+            over = false 
+        }
+        if (over === true) {
+          return true
+        }
+      }
+
+      // column check
+      for (var i = 0; i < 3; i++) {
+        var marker = state[0][i]
+        if (!marker)
+          continue
+
+        over = true
+        for (var j = 1; j < 3; j++) {
+          if (state[j][i] != marker)
+            over = false 
+        }
+        if (over === true)
+          return true
+      }
+
+      // first diagonal
+      var marker = state[0][0]
+      if (marker && state[1][1] == marker && state[2][2] == marker)
+        return true
+
+      // second diagonal
+      var marker = state[2][0]
+      if (marker && state[1][1] == marker && state[2][0] == marker)
+        return true
+
+      return false
+    }
+
+    if (!isOver(
+      [['x','x','x'],
+       [ 0 , 0 , 0 ],
+       [ 0 , 0 , 0 ]]
+      )) console.log('fail 1')
+
+    if (!isOver(
+      [[ 0 , 0 , 0 ],
+       ['x','x','x'],
+       [ 0 , 0 , 0 ]]
+      )) console.log('fail 2')
+
+    if (!isOver(
+      [[ 0 , 0 , 0 ],
+       [ 0 , 0 , 0 ],
+       ['x','x','x']]
+      )) console.log('fail 3')
+
+    if (!isOver(
+      [['x', 0 , 0 ],
+       [ 0 ,'x', 0 ],
+       [ 0 , 0 ,'x']]
+      )) console.log('fail 4')
+
+    if (!isOver(
+      [[ 0 , 0 ,'x'],
+       [ 0 ,'x', 0 ],
+       ['x', 0 , 0 ]]
+      )) console.log('fail 5')
+
+    if (!isOver(
+      [['x', 0 , 0 ],
+       ['x', 0 , 0 ],
+       ['x', 0 , 0 ]]
+      )) console.log('fail 6')
+
+    if (!isOver(
+      [[ 0 ,'x', 0 ],
+       [ 0 ,'x', 0 ],
+       [ 0 ,'x', 0 ]]
+      )) console.log('fail 7')
+
+    if (!isOver(
+      [[ 0 , 0 ,'x'],
+       [ 0 , 0 ,'x'],
+       [ 0 , 0 ,'x']]
+      )) console.log('fail 8')
+
     $(function() {
       var canvas = $('canvas')
       var ctx = canvas[0].getContext('2d')
@@ -72,8 +167,12 @@
       }
 
       ws.onmessage = function (e) { 
+          var state = JSON.parse(e.data)
           dbg(e.data)
-          drawGame(JSON.parse(e.data))
+          drawGame(state)
+          if (isOver(state)) {
+            dbg("It's over")
+          }
       }
       ws.onerror = function (e) { 
           dbg(e)
