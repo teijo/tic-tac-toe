@@ -8,28 +8,87 @@
       body
         background-color: #EEE
       canvas
-        border: 3px solid #000
         background-color: #FFF
+      #terminal
+        background-color: #CCC
   :javascript
+    var GRID_LEN = 100
+    var move = 0
+
+    function dbg(data) {
+      console.log(data)
+      $('#terminal').prepend(data+'\n')
+    }
+
     $(function() {
-      var ctx = $('canvas')[0].getContext('2d')
+      var canvas = $('canvas')
+      var ctx = canvas[0].getContext('2d')
+
+      var lines = [[GRID_LEN*1, 20,         GRID_LEN,      GRID_LEN*3-20],
+                   [GRID_LEN*2, 20,         GRID_LEN*2,    GRID_LEN*3-20],
+                   [20,         GRID_LEN*1, GRID_LEN*3-20, GRID_LEN],
+                   [20,         GRID_LEN*2, GRID_LEN*3-20, GRID_LEN*2]]
 
       ctx.lineWidth = 20
       ctx.strokeStyle = "#000"
       ctx.lineCap = "round"
 
-      var lines = [[100, 20, 100, 280],
-                   [200, 20, 200, 280],
-                   [20, 100, 280, 100],
-                   [20, 200, 280, 200]]
 
-      $.each(lines, function(i, l) {
-        ctx.beginPath()
-        ctx.moveTo(l[0], l[1])
-        ctx.lineTo(l[2], l[3])
-        ctx.stroke()
+      function insert(x, y, marker) {
+        if (marker !== 'o' && marker !== 'x')
+          return
+        ctx.font = "50pt Arial"
+        ctx.fillText(marker, x*GRID_LEN+50, y*GRID_LEN+50)
+      }
+
+      function drawGame(state) {
+        ctx.clearRect(0, 0, canvas.width(), canvas.height())
+        drawGrid()
+        for (var y = 0; y < 3; y++)
+          for (var x = 0; x < 3; x++)
+            insert(x, y, state[x][y])
+      }
+
+      function drawGrid() {
+        $.each(lines, function(i, l) {
+          ctx.beginPath()
+          ctx.moveTo(l[0], l[1])
+          ctx.lineTo(l[2], l[3])
+          ctx.stroke()
+        })
+      }
+
+
+      var sock = null
+      if (typeof(WebSocket) == 'undefined')
+        sock = MozWebSocket
+      else
+        sock = WebSocket
+
+      var ws = new sock("ws://localhost:10101")
+
+      ws.onopen = function() {
+      }
+
+      ws.onmessage = function (e) { 
+          dbg(e.data)
+          drawGame(JSON.parse(e.data))
+      }
+      ws.onerror = function (e) { 
+          dbg(e)
+      }
+      ws.onclose = function() { }
+
+      canvas.click(function (e) {
+        var marker = (++move)%2?'o':'x'
+        var obj = {x: parseInt(e.offsetX / GRID_LEN), 
+                   y: parseInt(e.offsetY / GRID_LEN),
+                   marker: marker}
+        ws.send(JSON.stringify(obj))
+        insert(obj.x, obj.y, marker)
       })
     })
   %body
   %h1 Tick-Tack-Toe
   %canvas{:width => 300, :height => 300}
+  %pre#terminal
