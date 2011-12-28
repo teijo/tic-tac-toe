@@ -78,7 +78,9 @@
       ws.onerror = function (e) { 
           dbg(e)
       }
-      ws.onclose = function() { }
+      ws.onclose = function(e) { 
+        dbg('Disconnected.')
+      }
 
       canvas.click(function (e) {
         var marker = (++move)%2?'o':'x'
