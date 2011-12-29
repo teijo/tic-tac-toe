@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tick-Tack-Toe</title>
+  </head>
+  <script src='jquery-1.7.1.min.js' type='text/javascript'></script>
+  <style type='text/css'>
+    body {
+      background-color: #eeeeee; }
+    
+    canvas {
+      background-color: white; }
+    
+    #terminal {
+      background-color: #cccccc; }
+  </style>
+  <script type='text/javascript'>
+    //<![CDATA[
+      var GRID_LEN = 100
+      var move = 0
+      
+      function dbg(data) {
+        console.log(data)
+        $('#terminal').prepend(data+'\n')
+      }
+      
+      function isOver(state) {
+        var over
+      
+        // row check
+        for (var i = 0; i < 3; i++) {
+          var marker = state[i][0]
+          if (!marker)
+            continue
+      
+          over = true
+          for (var j = 1; j < 3; j++) {
+            if (state[i][j] != marker)
+              over = false 
+          }
+          if (over === true) {
+            return true
+          }
+        }
+      
+        // column check
+        for (var i = 0; i < 3; i++) {
+          var marker = state[0][i]
+          if (!marker)
+            continue
+      
+          over = true
+          for (var j = 1; j < 3; j++) {
+            if (state[j][i] != marker)
+              over = false 
+          }
+          if (over === true)
+            return true
+        }
+      
+        // first diagonal
+        var marker = state[0][0]
+        if (marker && state[1][1] == marker && state[2][2] == marker)
+          return true
+      
+        // second diagonal
+        var marker = state[2][0]
+        if (marker && state[1][1] == marker && state[2][0] == marker)
+          return true
+      
+        // full check, tie
+        over = true
+        for (var i = 0; i < 3; i++)
+          for (var j = 0; j < 3; j++)
+            if (!state[i][j])
+              over = false
+      
+        return over
+      }
+      
+      if (!isOver(
+        [['x','x','x'],
+         [ 0 , 0 , 0 ],
+         [ 0 , 0 , 0 ]]
+        )) console.log('fail 1')
+      
+      if (!isOver(
+        [[ 0 , 0 , 0 ],
+         ['x','x','x'],
+         [ 0 , 0 , 0 ]]
+        )) console.log('fail 2')
+      
+      if (!isOver(
+        [[ 0 , 0 , 0 ],
+         [ 0 , 0 , 0 ],
+         ['x','x','x']]
+        )) console.log('fail 3')
+      
+      if (!isOver(
+        [['x', 0 , 0 ],
+         [ 0 ,'x', 0 ],
+         [ 0 , 0 ,'x']]
+        )) console.log('fail 4')
+      
+      if (!isOver(
+        [[ 0 , 0 ,'x'],
+         [ 0 ,'x', 0 ],
+         ['x', 0 , 0 ]]
+        )) console.log('fail 5')
+      
+      if (!isOver(
+        [['x', 0 , 0 ],
+         ['x', 0 , 0 ],
+         ['x', 0 , 0 ]]
+        )) console.log('fail 6')
+      
+      if (!isOver(
+        [[ 0 ,'x', 0 ],
+         [ 0 ,'x', 0 ],
+         [ 0 ,'x', 0 ]]
+        )) console.log('fail 7')
+      
+      if (!isOver(
+        [[ 0 , 0 ,'x'],
+         [ 0 , 0 ,'x'],
+         [ 0 , 0 ,'x']]
+        )) console.log('fail 8')
+      
+      if (!isOver(
+        [['x','x','o'],
+         ['o','o','x'],
+         ['x','o','x']]
+        )) console.log('fail 9')
+      
+      $(function() {
+        var canvas = $('canvas')
+        var ctx = canvas[0].getContext('2d')
+      
+        var lines = [[GRID_LEN*1, 20,         GRID_LEN,      GRID_LEN*3-20],
+                     [GRID_LEN*2, 20,         GRID_LEN*2,    GRID_LEN*3-20],
+                     [20,         GRID_LEN*1, GRID_LEN*3-20, GRID_LEN],
+                     [20,         GRID_LEN*2, GRID_LEN*3-20, GRID_LEN*2]]
+      
+        ctx.lineWidth = 20
+        ctx.strokeStyle = "#000"
+        ctx.lineCap = "round"
+      
+      
+        function insert(x, y, marker) {
+          if (marker !== 'o' && marker !== 'x')
+            return
+          ctx.font = "50pt Arial"
+          ctx.fillText(marker, x*GRID_LEN+50, y*GRID_LEN+50)
+        }
+      
+        function drawGame(state) {
+          ctx.clearRect(0, 0, canvas.width(), canvas.height())
+          drawGrid()
+          for (var y = 0; y < 3; y++)
+            for (var x = 0; x < 3; x++)
+              insert(x, y, state[x][y])
+        }
+      
+        function drawGrid() {
+          $.each(lines, function(i, l) {
+            ctx.beginPath()
+            ctx.moveTo(l[0], l[1])
+            ctx.lineTo(l[2], l[3])
+            ctx.stroke()
+          })
+        }
+      
+        var sock = null
+        if (typeof(WebSocket) == 'undefined')
+          sock = MozWebSocket
+        else
+          sock = WebSocket
+      
+        dbg('Connecting ...')
+        var ws = new sock("ws://localhost:10101")
+      
+        ws.onopen = function() {
+          dbg('Connected.')
+        }
+      
+        ws.onmessage = function (e) { 
+            var state = JSON.parse(e.data)
+            dbg(e.data)
+            drawGame(state)
+            if (isOver(state)) {
+              dbg("It's over")
+            }
+        }
+        ws.onerror = function (e) { 
+            dbg(e)
+        }
+        ws.onclose = function(e) { 
+          dbg('Disconnected.')
+        }
+      
+        canvas.click(function (e) {
+          var marker = (++move)%2?'o':'x'
+          var obj = {x: parseInt(e.offsetX / GRID_LEN), 
+                     y: parseInt(e.offsetY / GRID_LEN),
+                     marker: marker}
+          ws.send(JSON.stringify(obj))
+          insert(obj.x, obj.y, marker)
+        })
+      })
+    //]]>
+  </script>
+  <body></body>
+  <h1>Tick-Tack-Toe</h1>
+  <canvas height='300' width='300'></canvas>
+  <pre id='terminal'></pre>
+</html>
