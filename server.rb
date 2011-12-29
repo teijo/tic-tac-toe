@@ -20,6 +20,7 @@ server = WebSocketServer.new(
   :port => ARGV[1].to_i())
 puts("Server is running at port %d" % server.port)
 connections = []
+turn = 0
 history = [nil] * 20
 
 game = [[nil, nil, nil],[nil, nil, nil],[nil, nil, nil]]
@@ -140,12 +141,18 @@ reset(game)
 server.run() do |ws|
   begin
     
-    puts("Connection accepted")
     ws.handshake()
     que = Queue.new()
     connections.push(que)
 
-    ws.send(game.to_json())
+    data = {"state"=>game,"turn"=>turn,"players"=>connections.length}
+
+    idx = connections.index(que)
+    puts("Connection accepted ##{idx}")
+    data["move"] = (turn%2 == idx)
+    data["no"] = idx
+
+    ws.send(data.to_json())
     
     thread = Thread.new() do
       while true
@@ -158,18 +165,36 @@ server.run() do |ws|
     while data = ws.receive()
       puts("Received: #{data}")
 
+      # position can change if some players leave
+      idx = connections.index(que)
+      if turn%2 != idx
+        puts("Data from wrong player ##{idx}")
+        next
+      end
+
       move = JSON.parse(data)
       if game[move['x']][move['y']] == nil
-        game[move['x']][move['y']] = move['marker']
+        turn += 1
+
+        marker = 'o'
+        if turn%2 == 0
+          marker = 'x'
+        end
+
+        game[move['x']][move['y']] = marker
       end
-      data = game.to_json()
+      data = {"state"=>game,"turn"=>turn,"players"=>connections.length}
 
       for conn in connections
-        conn.push(data)
+        idx = connections.index(conn)
+        data["move"] = (turn%2 == idx)
+        data["no"] = idx
+        conn.push(data.to_json())
       end
 
       if isOver(game)
         reset(game)
+        turn = 0
       end
 
       history.push(data)
@@ -177,8 +202,23 @@ server.run() do |ws|
     end
     
   ensure
+
+    reset(game)
+    turn = 0
+
+    idx = connections.index(que)
     connections.delete(que)
     thread.terminate() if thread
-    puts("Connection closed")
+
+    data = {"state"=>game,"turn"=>turn,"players"=>connections.length}
+
+    for conn in connections
+      idx = connections.index(conn)
+      data["move"] = (turn%2 == idx)
+      data["no"] = idx
+      conn.push(data.to_json())
+    end
+
+    puts("Connection ##{idx} closed, #{connections.length} left")
   end
 end

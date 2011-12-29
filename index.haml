@@ -11,6 +11,14 @@
         background-color: #FFF
       #terminal
         background-color: #CCC
+      .wait
+        background-color: #900
+      .queued
+        background-color: #666
+      h1
+        span
+          color: #FFF
+          background-color: #090
   :javascript
     var GRID_LEN = 100
     var move = 0
@@ -128,6 +136,12 @@
        ['x','o','x']]
       )) console.log('fail 9')
 
+    if (isOver(
+      [[ 0 ,'x','o'],
+       [ 0 ,'o', 0 ],
+       [ 0 , 0 , 0 ]]
+      )) console.log('fail 10')
+
     $(function() {
       var canvas = $('canvas')
       var ctx = canvas[0].getContext('2d')
@@ -180,11 +194,26 @@
       }
 
       ws.onmessage = function (e) { 
-          var state = JSON.parse(e.data)
+          var data = JSON.parse(e.data)
           dbg(e.data)
-          drawGame(state)
-          if (isOver(state)) {
+          drawGame(data.state)
+          if (isOver(data.state)) {
             dbg("It's over")
+            dbg(data.state)
+          }
+          else {
+            var el = $('h1 span')
+            el.toggleClass('queued', (data.no > 1))
+            if (data.no > 1) {
+              el.text('Spectating, queued '+(data.no-1)+'.')
+            }
+            else {
+              el.toggleClass('wait', !data.move)
+              if (data.move)
+                el.text('Your move')
+              else
+                el.text("Opponent's move")
+            }
           }
       }
       ws.onerror = function (e) { 
@@ -195,15 +224,12 @@
       }
 
       canvas.click(function (e) {
-        var marker = (++move)%2?'o':'x'
         var obj = {x: parseInt(e.offsetX / GRID_LEN), 
-                   y: parseInt(e.offsetY / GRID_LEN),
-                   marker: marker}
+                   y: parseInt(e.offsetY / GRID_LEN)}
         ws.send(JSON.stringify(obj))
-        insert(obj.x, obj.y, marker)
       })
     })
   %body
-  %h1 Tick-Tack-Toe
+  %h1 Tick-Tack-Toe <span></span>
   %canvas{:width => 300, :height => 300}
   %pre#terminal
