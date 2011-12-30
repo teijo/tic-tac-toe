@@ -37,75 +37,49 @@ isOver = (g) ->
 
   return over
 
-if !isOver(
+overPatterns = [
   [['x','x','x'],
    [ 0 , 0 , 0 ],
-   [ 0 , 0 , 0 ]]
-  )
-  console.log('fail 1')
-
-if !isOver(
+   [ 0 , 0 , 0 ]],
   [[ 0 , 0 , 0 ],
    ['x','x','x'],
-   [ 0 , 0 , 0 ]]
-  )
-  console.log('fail 2')
-
-if !isOver(
+   [ 0 , 0 , 0 ]],
   [[ 0 , 0 , 0 ],
    [ 0 , 0 , 0 ],
-   ['x','x','x']]
-  )
-  console.log('fail 3')
-
-if !isOver(
+   ['x','x','x']],
   [['x', 0 , 0 ],
    [ 0 ,'x', 0 ],
-   [ 0 , 0 ,'x']]
-  )
-  console.log('fail 4')
-
-if !isOver(
+   [ 0 , 0 ,'x']],
   [[ 0 , 0 ,'x'],
    [ 0 ,'x', 0 ],
-   ['x', 0 , 0 ]]
-  )
-  console.log('fail 5')
-
-if !isOver(
+   ['x', 0 , 0 ]],
   [['x', 0 , 0 ],
    ['x', 0 , 0 ],
-   ['x', 0 , 0 ]]
-  )
-  console.log('fail 6')
-
-if !isOver(
+   ['x', 0 , 0 ]],
   [[ 0 ,'x', 0 ],
    [ 0 ,'x', 0 ],
-   [ 0 ,'x', 0 ]]
-  )
-  console.log('fail 7')
-
-if !isOver(
+   [ 0 ,'x', 0 ]],
   [[ 0 , 0 ,'x'],
    [ 0 , 0 ,'x'],
-   [ 0 , 0 ,'x']]
-  )
-  console.log('fail 8')
-
-if !isOver(
+   [ 0 , 0 ,'x']],
   [['x','x','o'],
    ['o','o','x'],
    ['x','o','x']]
-  )
-  console.log('fail 9')
+  ]
 
-if isOver(
+for i in [0..(overPatterns-1)]
+  if !isOver(overPatterns[i])
+    console.log('Pattern #'+i+' should be over')
+
+notOverPatterns = [
   [[ 0 ,'x','o'],
    [ 0 ,'o', 0 ],
    [ 0 , 0 , 0 ]]
-  )
-  console.log('fail 10')
+  ]
+
+for i in [0..(notOverPatterns.length-1)]
+  if isOver(notOverPatterns[i])
+    console.log('Pattern #'+i+' should NOT be over')
 
 $(() ->
   canvas = $('#board')

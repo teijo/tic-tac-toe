@@ -1,5 +1,5 @@
 (function() {
-  var GRID_LEN, dbg, isOver, move;
+  var GRID_LEN, dbg, i, isOver, move, notOverPatterns, overPatterns, _ref, _ref2;
 
   GRID_LEN = 100;
 
@@ -31,27 +31,19 @@
     return over;
   };
 
-  if (!isOver([['x', 'x', 'x'], [0, 0, 0], [0, 0, 0]])) console.log('fail 1');
+  overPatterns = [[['x', 'x', 'x'], [0, 0, 0], [0, 0, 0]], [[0, 0, 0], ['x', 'x', 'x'], [0, 0, 0]], [[0, 0, 0], [0, 0, 0], ['x', 'x', 'x']], [['x', 0, 0], [0, 'x', 0], [0, 0, 'x']], [[0, 0, 'x'], [0, 'x', 0], ['x', 0, 0]], [['x', 0, 0], ['x', 0, 0], ['x', 0, 0]], [[0, 'x', 0], [0, 'x', 0], [0, 'x', 0]], [[0, 0, 'x'], [0, 0, 'x'], [0, 0, 'x']], [['x', 'x', 'o'], ['o', 'o', 'x'], ['x', 'o', 'x']]];
 
-  if (!isOver([[0, 0, 0], ['x', 'x', 'x'], [0, 0, 0]])) console.log('fail 2');
-
-  if (!isOver([[0, 0, 0], [0, 0, 0], ['x', 'x', 'x']])) console.log('fail 3');
-
-  if (!isOver([['x', 0, 0], [0, 'x', 0], [0, 0, 'x']])) console.log('fail 4');
-
-  if (!isOver([[0, 0, 'x'], [0, 'x', 0], ['x', 0, 0]])) console.log('fail 5');
-
-  if (!isOver([['x', 0, 0], ['x', 0, 0], ['x', 0, 0]])) console.log('fail 6');
-
-  if (!isOver([[0, 'x', 0], [0, 'x', 0], [0, 'x', 0]])) console.log('fail 7');
-
-  if (!isOver([[0, 0, 'x'], [0, 0, 'x'], [0, 0, 'x']])) console.log('fail 8');
-
-  if (!isOver([['x', 'x', 'o'], ['o', 'o', 'x'], ['x', 'o', 'x']])) {
-    console.log('fail 9');
+  for (i = 0, _ref = overPatterns - 1; 0 <= _ref ? i <= _ref : i >= _ref; 0 <= _ref ? i++ : i--) {
+    if (!isOver(overPatterns[i])) console.log('Pattern #' + i + ' should be over');
   }
 
-  if (isOver([[0, 'x', 'o'], [0, 'o', 0], [0, 0, 0]])) console.log('fail 10');
+  notOverPatterns = [[[0, 'x', 'o'], [0, 'o', 0], [0, 0, 0]]];
+
+  for (i = 0, _ref2 = notOverPatterns.length - 1; 0 <= _ref2 ? i <= _ref2 : i >= _ref2; 0 <= _ref2 ? i++ : i--) {
+    if (isOver(notOverPatterns[i])) {
+      console.log('Pattern #' + i + ' should NOT be over');
+    }
+  }
 
   $(function() {
     var boardClick, canvas, clearBoard, clearHover, ctx, ctxH, doBinding, drawGame, drawGrid, drawStrike, hover, insert, lines, sock, ws;
