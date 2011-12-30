@@ -119,12 +119,16 @@
       if (typeof vector === 'object') return drawStrike(vector);
     };
     drawGrid = function() {
-      return $.each(lines, function(i, l) {
+      var l, _i, _len, _results;
+      _results = [];
+      for (_i = 0, _len = lines.length; _i < _len; _i++) {
+        l = lines[_i];
         ctx.beginPath();
         ctx.moveTo(l[0], l[1]);
         ctx.lineTo(l[2], l[3]);
-        return ctx.stroke();
-      });
+        _results.push(ctx.stroke());
+      }
+      return _results;
     };
     clearHover = function() {
       return ctxH.clearRect(0, 0, hover.width(), hover.height());

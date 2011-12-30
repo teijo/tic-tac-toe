@@ -35,7 +35,7 @@ isOver = (g) ->
       if (!g[i][j])
         over = false
 
-  over
+  return over
 
 if !isOver(
   [['x','x','x'],
@@ -177,12 +177,11 @@ $(() ->
       drawStrike(vector)
 
   drawGrid = () ->
-    $.each(lines, (i, l) ->
+    for l in lines
       ctx.beginPath()
       ctx.moveTo(l[0], l[1])
       ctx.lineTo(l[2], l[3])
       ctx.stroke()
-    )
 
   clearHover = () ->
     ctxH.clearRect(0, 0, hover.width(), hover.height())
@@ -220,8 +219,10 @@ $(() ->
       data = JSON.parse(e.data)
       vector = isOver(data.state)
       drawGame(data.state, vector)
+
       if vector
         el.text("")
+
         if data.no < 2
           if vector == true
             el.text("Tie. ")
@@ -233,10 +234,8 @@ $(() ->
 
         if data.players > 2 and data.no == 0
           el.append("You'll spectate next.")
-
         else if data.players == 2 and data.no == 0
           el.append("You're playing. Opponent starts.")
-
         else if data.no == 1
           el.append("You'll start! Click to clear board.")
           canvas.click(() ->
@@ -244,14 +243,13 @@ $(() ->
               # player 2 will be player 1 so 'x' -> 'o'
               doBinding((data.no-1))
           )
-
         else if data.no == 2
           el.text("Game over. You're playing next! Opponent starts.")
-
         else
           el.text("Game over. Now queued "+(data.no-2)+".")
       else
         el.toggleClass('queued', (data.players < 2 || data.no > 1))
+
         if data.players < 2
           el.text('Waiting for more players')
         else
@@ -259,6 +257,7 @@ $(() ->
             el.text('Spectating, queued '+(data.no-1)+'.')
           else
             el.toggleClass('wait', !data.move)
+
             if data.move
               el.text('Your move')
               doBinding(data.no)
