@@ -3,10 +3,12 @@
   %head
     %title Tick-Tack-Toe
   %script{:src => "jquery-1.7.1.min.js", :type => "text/javascript"}
+  %link{:href => "http://fonts.googleapis.com/css?family=Cabin+Condensed", :rel => "stylesheet", :type => "text/css"}
   %style{:type => "text/css"}
     :sass
       body
         background-color: #FFF
+        font-family: 'Cabin Condensed', sans-serif
         text-align: center
       #board
         z-index: 1
@@ -20,25 +22,26 @@
         canvas
           position: absolute
       #terminal
-        background-color: #CCC
+        color: #CCC
       .wait
-        background-color: #900
+        color: #900
       .queued
-        background-color: #666
+        color: #666
       h1
         span
-          color: #FFF
-          background-color: #090
+          color: #090
+          font-size: 50%
           display: block
-          border-radius: 5px
           padding: 5px
   :javascript
     var GRID_LEN = 100
     var move = 0
 
     function dbg(data) {
-      console.log(data)
-      $('#terminal').prepend(data+'\n')
+      if (false) {
+        console.log(data)
+        $('#terminal').prepend(data+'\n')
+      }
     }
 
     // return winner marker, true on tie and false if not over
@@ -252,24 +255,23 @@
       ws.onmessage = function (e) { 
           var el = $('h1 span')
           var data = JSON.parse(e.data)
-          dbg(e.data)
           var vector = isOver(data.state)
           drawGame(data.state, vector)
           if (vector) {
-            dbg("It's over")
+            el.text("")
             if (data.no < 2) {
               if (!data.move)
-                dbg("You won!")
+                el.text("You won! ")
               else
-                dbg("You lost")
+                el.text("You lost. ")
             }
 
             if (data.players > 2 && data.no === 0)
-              el.text("You'll spectate next.")
+              el.append("You'll spectate next.")
             else if (data.players == 2 && data.no === 0)
-              el.text("You're playing. Opponent starts.")
+              el.append("You're playing. Opponent starts.")
             else if (data.no === 1) {
-              el.text("You'll start! Click to clear board.")
+              el.append("You'll start! Click to clear board.")
               canvas.click(function() {
                   clearBoard()
                   // player 2 will be player 1 so 'x' -> 'o'
@@ -277,8 +279,9 @@
                 })
             }
             else if (data.no === 2)
-              el.text("You're playing next! Opponent starts.")
-            dbg(data.state)
+              el.text("Game over. You're playing next! Opponent starts.")
+            else
+              el.text("Game over. Now queued "+(data.no-2)+".")
           }
           else {
             el.toggleClass('queued', (data.players < 2 || data.no > 1))
