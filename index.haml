@@ -6,7 +6,8 @@
   %style{:type => "text/css"}
     :sass
       body
-        background-color: #EEE
+        background-color: #FFF
+        text-align: center
       canvas
         background-color: #FFF
       #terminal
@@ -19,6 +20,9 @@
         span
           color: #FFF
           background-color: #090
+          display: block
+          border-radius: 5px
+          padding: 5px
   :javascript
     var GRID_LEN = 100
     var move = 0
@@ -165,9 +169,20 @@
         ctx.restore()
       }
 
-      function drawGame(state, vector) {
+      function boardClick(e) {
+        var obj = {x: parseInt(e.offsetX / GRID_LEN), 
+                  y: parseInt(e.offsetY / GRID_LEN)}
+        ws.send(JSON.stringify(obj))
+        $(e.srcElement).unbind('click')
+      }
+
+      function clearBoard() {
         ctx.clearRect(0, 0, canvas.width(), canvas.height())
         drawGrid()
+      }
+
+      function drawGame(state, vector) {
+        clearBoard()
         for (var y = 0; y < 3; y++)
           for (var x = 0; x < 3; x++)
             insert(x, y, state[x][y])
@@ -198,6 +213,7 @@
       }
 
       ws.onmessage = function (e) { 
+          var el = $('h1 span')
           var data = JSON.parse(e.data)
           dbg(e.data)
           var vector = isOver(data.state)
@@ -211,38 +227,38 @@
                 dbg("You lost")
             }
             if (data.players > 2 && data.no === 0)
-              dbg("You'll spectate next.")
+              el.text("You'll spectate next.")
             else if (data.players == 2 && data.no === 0)
-              dbg("You're playing. Opponent starts.")
-            else if (data.no === 1)
-              dbg("You're playing! You start.")
+              el.text("You're playing. Opponent starts.")
+            else if (data.no === 1) {
+              el.text("You'll start! Click to clear board.")
+              canvas.click(function() {
+                  clearBoard()
+                  $(this).click(boardClick)
+                })
+            }
             else if (data.no === 2)
-              dbg("You're playing next! Opponent starts.")
+              el.text("You're playing next! Opponent starts.")
             dbg(data.state)
           }
-
-          var el = $('h1 span')
-          el.toggleClass('queued', (data.players < 2 || data.no > 1))
-          if (data.players < 2) {
-            el.text('Waiting for more players')
-          }
           else {
-            if (data.no > 1) {
-              el.text('Spectating, queued '+(data.no-1)+'.')
+            el.toggleClass('queued', (data.players < 2 || data.no > 1))
+            if (data.players < 2) {
+              el.text('Waiting for more players')
             }
             else {
-              el.toggleClass('wait', !data.move)
-              if (data.move) {
-                el.text('Your move')
-                canvas.click(function (e) {
-                  var obj = {x: parseInt(e.offsetX / GRID_LEN), 
-                            y: parseInt(e.offsetY / GRID_LEN)}
-                  ws.send(JSON.stringify(obj))
-                  $(this).unbind('click')
-                })
+              if (data.no > 1) {
+                el.text('Spectating, queued '+(data.no-1)+'.')
               }
-              else
-                el.text("Opponent's move")
+              else {
+                el.toggleClass('wait', !data.move)
+                if (data.move) {
+                  el.text('Your move')
+                  canvas.click(boardClick)
+                }
+                else
+                  el.text("Opponent's move")
+              }
             }
           }
       }
