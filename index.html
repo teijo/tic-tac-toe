@@ -35,55 +35,33 @@
       }
       
       // return winner marker, true on tie and false if not over
-      function isOver(state) {
-        var over
+      function isOver(g) {
+                       //rows
+        var vectors = [[[0,0],[0,1],[0,2]],
+                       [[1,0],[1,1],[1,2]],
+                       [[2,0],[2,1],[2,2]],
+                       //cols
+                       [[0,0],[1,0],[2,0]],
+                       [[0,1],[1,1],[2,1]],
+                       [[0,2],[1,2],[2,2]],
+                       //diagonals
+                       [[0,0],[1,1],[2,2]],
+                       [[2,0],[1,1],[0,2]]]
       
-        // row check
-        for (var i = 0; i < 3; i++) {
-          var marker = state[i][0]
-          if (!marker)
-            continue
-      
-          over = true
-          for (var j = 1; j < 3; j++) {
-            if (state[i][j] != marker)
-              over = false 
-          }
-          if (over === true) {
-            return marker
-          }
+        for (var i = 0; i < vectors.length; i++) {
+          var v = vectors[i]
+          var a = g[v[0][0]][v[0][1]]
+          var b = g[v[1][0]][v[1][1]]
+          var c = g[v[2][0]][v[2][1]]
+          if ((a === 'x' || a === 'o') && a === b && a === c)
+            return v
         }
-      
-        // column check
-        for (var i = 0; i < 3; i++) {
-          var marker = state[0][i]
-          if (!marker)
-            continue
-      
-          over = true
-          for (var j = 1; j < 3; j++) {
-            if (state[j][i] != marker)
-              over = false 
-          }
-          if (over === true)
-            return marker
-        }
-      
-        // first diagonal
-        var marker = state[0][0]
-        if (marker && state[1][1] == marker && state[2][2] == marker)
-          return marker
-      
-        // second diagonal
-        var marker = state[2][0]
-        if (marker && state[1][1] == marker && state[2][0] == marker)
-          return marker
       
         // full check, tie
-        over = true
+        var over = true
         for (var i = 0; i < 3; i++)
           for (var j = 0; j < 3; j++)
-            if (!state[i][j])
+            if (!g[i][j])
               over = false
       
         return over
@@ -182,12 +160,25 @@
           ctx.restore()
         }
       
-        function drawGame(state) {
+        function drawStrike(v) {
+          var offset = (GRID_LEN/2)
+          ctx.save()
+          ctx.strokeStyle = '#F00'
+          ctx.beginPath()
+          ctx.moveTo(v[0][0]*GRID_LEN+offset, v[0][1]*GRID_LEN+offset)
+          ctx.lineTo(v[2][0]*GRID_LEN+offset, v[2][1]*GRID_LEN+offset)
+          ctx.stroke()
+          ctx.restore()
+        }
+      
+        function drawGame(state, vector) {
           ctx.clearRect(0, 0, canvas.width(), canvas.height())
           drawGrid()
           for (var y = 0; y < 3; y++)
             for (var x = 0; x < 3; x++)
               insert(x, y, state[x][y])
+          if (typeof(vector) === 'object')
+            drawStrike(vector)
         }
       
         function drawGrid() {
@@ -215,8 +206,9 @@
         ws.onmessage = function (e) { 
             var data = JSON.parse(e.data)
             dbg(e.data)
-            drawGame(data.state)
-            if (isOver(data.state)) {
+            var vector = isOver(data.state)
+            drawGame(data.state, vector)
+            if (vector) {
               dbg("It's over")
               if (!data.move)
                 dbg("You won!")
