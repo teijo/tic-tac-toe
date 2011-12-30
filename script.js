@@ -1,5 +1,5 @@
 (function() {
-  var GRID_LEN, dbg, i, isOver, move, notOverPatterns, overPatterns, _ref, _ref2;
+  var GRID_LEN, dbg, exp, i, isOver, move, notOverPatterns, overPatterns, pair, posStr, posTest, res, _i, _len, _ref, _ref2;
 
   GRID_LEN = 100;
 
@@ -42,6 +42,28 @@
   for (i = 0, _ref2 = notOverPatterns.length - 1; 0 <= _ref2 ? i <= _ref2 : i >= _ref2; 0 <= _ref2 ? i++ : i--) {
     if (isOver(notOverPatterns[i])) {
       console.log('Pattern #' + i + ' should NOT be over');
+    }
+  }
+
+  posStr = function(n) {
+    var last, list, num, str;
+    str = "" + n;
+    list = ["th", "st", "nd", "rd"];
+    if (n > 10) {
+      num = parseInt(str.slice(-2));
+      if (num > 10 && num < 14) return n + list[0];
+    }
+    last = parseInt(str.slice(-1));
+    if (last < 4) return n + list[last];
+    return n + list[0];
+  };
+
+  posTest = [[0, "th"], [1, "st"], [2, "nd"], [3, "rd"], [4, "th"], [10, "th"], [11, "th"], [12, "th"], [13, "th"], [14, "th"], [20, "th"], [21, "st"], [22, "nd"], [23, "rd"], [24, "th"], [110, "th"], [111, "th"], [112, "th"], [113, "th"], [114, "th"], [120, "th"], [121, "st"], [122, "nd"], [123, "rd"], [124, "th"]];
+
+  for (_i = 0, _len = posTest.length; _i < _len; _i++) {
+    pair = posTest[_i];
+    if ((res = posStr(pair[0])) !== (exp = pair[0] + pair[1])) {
+      console.log(pair[0] + ' mapped to ' + res + ' instead of ' + exp);
     }
   }
 
@@ -111,10 +133,10 @@
       if (typeof vector === 'object') return drawStrike(vector);
     };
     drawGrid = function() {
-      var l, _i, _len, _results;
+      var l, _j, _len2, _results;
       _results = [];
-      for (_i = 0, _len = lines.length; _i < _len; _i++) {
-        l = lines[_i];
+      for (_j = 0, _len2 = lines.length; _j < _len2; _j++) {
+        l = lines[_j];
         ctx.beginPath();
         ctx.moveTo(l[0], l[1]);
         ctx.lineTo(l[2], l[3]);
@@ -166,19 +188,19 @@
           }
         }
         if (data.players > 2 && data.no === 0) {
-          return el.append("You'll spectate next.");
+          return el.append("You'll spectate next");
         } else if (data.players === 2 && data.no === 0) {
-          return el.append("You're playing. Opponent starts.");
+          return el.append("You're playing. Opponent starts");
         } else if (data.no === 1) {
-          el.append("You'll start! Click to clear board.");
+          el.append("You'll start! Click to clear board");
           return canvas.click(function() {
             clearBoard();
             return doBinding(data.no - 1);
           });
         } else if (data.no === 2) {
-          return el.text("Game over. You're playing next! Opponent starts.");
+          return el.text("Game over. You're playing next! Opponent starts");
         } else {
-          return el.text("Game over. Now queued " + (data.no - 2) + ".");
+          return el.text("Game over. Now queued " + posStr(data.no - 2));
         }
       } else {
         el.toggleClass('queued', data.players < 2 || data.no > 1);
@@ -186,7 +208,7 @@
           return el.text('Waiting for more players');
         } else {
           if (data.no > 1) {
-            return el.text('Spectating, queued ' + (data.no - 1) + '.');
+            return el.text('Spectating, queued ' + posStr(data.no - 1));
           } else {
             el.toggleClass('wait', !data.move);
             if (data.move) {

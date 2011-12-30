@@ -81,6 +81,56 @@ for i in [0..(notOverPatterns.length-1)]
   if isOver(notOverPatterns[i])
     console.log('Pattern #'+i+' should NOT be over')
 
+posStr = (n) ->
+  str = ""+n
+  list = ["th","st","nd","rd"]
+
+  # x11-x13 -> th
+  if n > 10
+    num = parseInt(str[-2..])
+    if num > 10 && num < 14
+      return n+list[0]
+
+  # 0 -> th, 1 -> st, 2 -> nd, 3 -> rd
+  last = parseInt(str[-1..])
+  if last < 4
+    return n+list[last]
+
+  # any other -> th
+  return n+list[0]
+
+posTest = [
+  [0,   "th"],
+  [1,   "st"],
+  [2,   "nd"],
+  [3,   "rd"],
+  [4,   "th"],
+  [10,  "th"],
+  [11,  "th"],
+  [12,  "th"],
+  [13,  "th"],
+  [14,  "th"],
+  [20,  "th"],
+  [21,  "st"],
+  [22,  "nd"],
+  [23,  "rd"],
+  [24,  "th"],
+  [110, "th"],
+  [111, "th"],
+  [112, "th"],
+  [113, "th"],
+  [114, "th"],
+  [120, "th"],
+  [121, "st"],
+  [122, "nd"],
+  [123, "rd"],
+  [124, "th"]
+  ]
+
+for pair in posTest
+  if ((res = posStr(pair[0])) != (exp = pair[0]+pair[1]))
+    console.log(pair[0]+' mapped to '+res+' instead of '+exp)
+
 $(() ->
   canvas = $('#board')
   hover = $('#hover')
@@ -207,20 +257,20 @@ $(() ->
               el.text("You lost. ")
 
         if data.players > 2 and data.no == 0
-          el.append("You'll spectate next.")
+          el.append("You'll spectate next")
         else if data.players == 2 and data.no == 0
-          el.append("You're playing. Opponent starts.")
+          el.append("You're playing. Opponent starts")
         else if data.no == 1
-          el.append("You'll start! Click to clear board.")
+          el.append("You'll start! Click to clear board")
           canvas.click(() ->
               clearBoard()
               # player 2 will be player 1 so 'x' -> 'o'
               doBinding((data.no-1))
           )
         else if data.no == 2
-          el.text("Game over. You're playing next! Opponent starts.")
+          el.text("Game over. You're playing next! Opponent starts")
         else
-          el.text("Game over. Now queued "+(data.no-2)+".")
+          el.text("Game over. Now queued "+posStr(data.no-2))
       else
         el.toggleClass('queued', (data.players < 2 || data.no > 1))
 
@@ -228,7 +278,7 @@ $(() ->
           el.text('Waiting for more players')
         else
           if data.no > 1
-            el.text('Spectating, queued '+(data.no-1)+'.')
+            el.text('Spectating, queued '+posStr(data.no-1))
           else
             el.toggleClass('wait', !data.move)
 
