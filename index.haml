@@ -159,8 +159,20 @@
       function insert(x, y, marker) {
         if (marker !== 'o' && marker !== 'x')
           return
-        ctx.font = "50pt Arial"
-        ctx.fillText(marker, x*GRID_LEN+50, y*GRID_LEN+50)
+        ctx.save()
+        ctx.translate(x*GRID_LEN+50, y*GRID_LEN+50)
+        ctx.beginPath()
+        if (marker === 'x') {
+          ctx.moveTo(-30, -30)
+          ctx.lineTo( 30,  30)
+          ctx.moveTo( 30, -30)
+          ctx.lineTo(-30,  30)
+        }
+        else {
+          ctx.arc(0, 0, 30, 0, Math.PI*2, true); 
+        }
+        ctx.stroke()
+        ctx.restore()
       }
 
       function drawGame(state) {
