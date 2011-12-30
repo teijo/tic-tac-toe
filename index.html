@@ -9,8 +9,19 @@
       background-color: white;
       text-align: center; }
     
-    canvas {
-      background-color: white; }
+    #board {
+      z-index: 1; }
+    
+    #hover {
+      z-index: 0; }
+    
+    #container {
+      margin: auto;
+      position: relative;
+      width: 300px;
+      height: 300px; }
+      #container canvas {
+        position: absolute; }
     
     #terminal {
       background-color: #cccccc; }
@@ -132,8 +143,10 @@
         )) console.log('fail 10')
       
       $(function() {
-        var canvas = $('canvas')
+        var canvas = $('#board')
+        var hover = $('#hover')
         var ctx = canvas[0].getContext('2d')
+        var ctxH = hover[0].getContext('2d')
       
         var lines = [[GRID_LEN*1, 20,         GRID_LEN,      GRID_LEN*3-20],
                      [GRID_LEN*2, 20,         GRID_LEN*2,    GRID_LEN*3-20],
@@ -144,8 +157,11 @@
         ctx.strokeStyle = "#000"
         ctx.lineCap = "round"
       
+        ctxH.lineWidth = 20
+        ctxH.strokeStyle = "#CCC"
+        ctxH.lineCap = "round"
       
-        function insert(x, y, marker) {
+        function insert(ctx, x, y, marker) {
           if (marker !== 'o' && marker !== 'x')
             return
           ctx.save()
@@ -179,7 +195,9 @@
           var obj = {x: parseInt(e.offsetX / GRID_LEN), 
                     y: parseInt(e.offsetY / GRID_LEN)}
           ws.send(JSON.stringify(obj))
-          $(e.srcElement).unbind('click')
+          canvas.unbind()
+          hover.unbind()
+          clearHover()
         }
       
         function clearBoard() {
@@ -191,7 +209,7 @@
           clearBoard()
           for (var y = 0; y < 3; y++)
             for (var x = 0; x < 3; x++)
-              insert(x, y, state[x][y])
+              insert(ctx, x, y, state[x][y])
           if (typeof(vector) === 'object')
             drawStrike(vector)
         }
@@ -202,6 +220,27 @@
             ctx.moveTo(l[0], l[1])
             ctx.lineTo(l[2], l[3])
             ctx.stroke()
+          })
+        }
+      
+        function clearHover() {
+          ctxH.clearRect(0, 0, hover.width(), hover.height())
+        }
+      
+        function doBinding(no) {
+          canvas.click(boardClick)
+      
+          canvas.mousemove(function(e) {
+            ctxH.clearRect(0, 0, hover.width(), hover.height())
+            // this drawing could be done only when moving to new cell
+            insert(ctxH,
+                   parseInt(e.offsetX/100),
+                   parseInt(e.offsetY/100),
+                   (!no?'o':'x'))
+          })
+      
+          canvas.mouseout(function(e) {
+            clearHover()
           })
         }
       
@@ -232,6 +271,7 @@
                 else
                   dbg("You lost")
               }
+      
               if (data.players > 2 && data.no === 0)
                 el.text("You'll spectate next.")
               else if (data.players == 2 && data.no === 0)
@@ -240,7 +280,8 @@
                 el.text("You'll start! Click to clear board.")
                 canvas.click(function() {
                     clearBoard()
-                    $(this).click(boardClick)
+                    // player 2 will be player 1 so 'x' -> 'o'
+                    doBinding((data.no-1))
                   })
               }
               else if (data.no === 2)
@@ -260,7 +301,7 @@
                   el.toggleClass('wait', !data.move)
                   if (data.move) {
                     el.text('Your move')
-                    canvas.click(boardClick)
+                    doBinding(data.no)
                   }
                   else
                     el.text("Opponent's move")
@@ -279,6 +320,9 @@
   </script>
   <body></body>
   <h1>Tick-Tack-Toe <span></span></h1>
-  <canvas height='300' width='300'></canvas>
+  <div id='container'>
+    <canvas height='300' id='board' width='300'></canvas>
+    <canvas height='300' id='hover' width='300'></canvas>
+  </div>
   <pre id='terminal'></pre>
 </html>
