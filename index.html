@@ -34,6 +34,7 @@
         $('#terminal').prepend(data+'\n')
       }
       
+      // return winner marker, true on tie and false if not over
       function isOver(state) {
         var over
       
@@ -49,7 +50,7 @@
               over = false 
           }
           if (over === true) {
-            return true
+            return marker
           }
         }
       
@@ -65,18 +66,18 @@
               over = false 
           }
           if (over === true)
-            return true
+            return marker
         }
       
         // first diagonal
         var marker = state[0][0]
         if (marker && state[1][1] == marker && state[2][2] == marker)
-          return true
+          return marker
       
         // second diagonal
         var marker = state[2][0]
         if (marker && state[1][1] == marker && state[2][0] == marker)
-          return true
+          return marker
       
         // full check, tie
         over = true
@@ -217,6 +218,10 @@
             drawGame(data.state)
             if (isOver(data.state)) {
               dbg("It's over")
+              if (!data.move)
+                dbg("You won!")
+              else
+                dbg("You lost")
               dbg(data.state)
             }
             else {
