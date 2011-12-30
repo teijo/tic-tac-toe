@@ -148,10 +148,13 @@ server.run() do |ws|
 
     idx = connections.index(que)
     puts("Connection accepted ##{idx}")
-    data["move"] = (turn%2 == idx)
-    data["no"] = idx
 
-    ws.send(data.to_json())
+    for conn in connections
+      idx = connections.index(conn)
+      data["move"] = (turn%2 == idx)
+      data["no"] = idx
+      conn.push(data.to_json())
+    end
     
     thread = Thread.new() do
       while true

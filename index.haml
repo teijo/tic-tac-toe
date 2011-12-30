@@ -210,31 +210,39 @@
               else
                 dbg("You lost")
             }
-            if (data.no === 0)
+            if (data.players > 2 && data.no === 0)
               dbg("You'll spectate next.")
+            else if (data.players == 2 && data.no === 0)
+              dbg("You're playing. Opponent starts.")
             else if (data.no === 1)
               dbg("You're playing! You start.")
             else if (data.no === 2)
               dbg("You're playing next! Opponent starts.")
             dbg(data.state)
           }
+
+          var el = $('h1 span')
+          el.toggleClass('queued', (data.players < 2 || data.no > 1))
+          if (data.players < 2) {
+            el.text('Waiting for more players')
+          }
           else {
-            var el = $('h1 span')
-            el.toggleClass('queued', (data.players < 2 || data.no > 1))
-            if (data.players < 2) {
-              el.text('Waiting for more players')
+            if (data.no > 1) {
+              el.text('Spectating, queued '+(data.no-1)+'.')
             }
             else {
-              if (data.no > 1) {
-                el.text('Spectating, queued '+(data.no-1)+'.')
+              el.toggleClass('wait', !data.move)
+              if (data.move) {
+                el.text('Your move')
+                canvas.click(function (e) {
+                  var obj = {x: parseInt(e.offsetX / GRID_LEN), 
+                            y: parseInt(e.offsetY / GRID_LEN)}
+                  ws.send(JSON.stringify(obj))
+                  $(this).unbind('click')
+                })
               }
-              else {
-                el.toggleClass('wait', !data.move)
-                if (data.move)
-                  el.text('Your move')
-                else
-                  el.text("Opponent's move")
-              }
+              else
+                el.text("Opponent's move")
             }
           }
       }
@@ -244,12 +252,6 @@
       ws.onclose = function(e) { 
         dbg('Disconnected.')
       }
-
-      canvas.click(function (e) {
-        var obj = {x: parseInt(e.offsetX / GRID_LEN), 
-                   y: parseInt(e.offsetY / GRID_LEN)}
-        ws.send(JSON.stringify(obj))
-      })
     })
   %body
   %h1 Tick-Tack-Toe <span></span>
