@@ -21,7 +21,6 @@ server = WebSocketServer.new(
 puts("Server is running at port %d" % server.port)
 connections = []
 turn = 0
-history = [nil] * 20
 
 game = [[nil, nil, nil],[nil, nil, nil],[nil, nil, nil]]
 
@@ -193,30 +192,31 @@ server.run() do |ws|
       end
 
       if isOver(game)
+        # round-robin, put first to last
+        connections = connections.concat(connections.shift(1))
         reset(game)
         turn = 0
       end
-
-      history.push(data)
-      history.shift()
     end
     
   ensure
 
-    reset(game)
-    turn = 0
-
     idx = connections.index(que)
+
     connections.delete(que)
     thread.terminate() if thread
 
-    data = {"state"=>game,"turn"=>turn,"players"=>connections.length}
+    if idx < 2
+      reset(game)
+      turn = 0
+      data = {"state"=>game,"turn"=>turn,"players"=>connections.length}
 
-    for conn in connections
-      idx = connections.index(conn)
-      data["move"] = (turn%2 == idx)
-      data["no"] = idx
-      conn.push(data.to_json())
+      for conn in connections
+        idx = connections.index(conn)
+        data["move"] = (turn%2 == idx)
+        data["no"] = idx
+        conn.push(data.to_json())
+      end
     end
 
     puts("Connection ##{idx} closed, #{connections.length} left")

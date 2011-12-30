@@ -210,24 +210,37 @@
             drawGame(data.state, vector)
             if (vector) {
               dbg("It's over")
-              if (!data.move)
-                dbg("You won!")
-              else
-                dbg("You lost")
+              if (data.no < 2) {
+                if (!data.move)
+                  dbg("You won!")
+                else
+                  dbg("You lost")
+              }
+              if (data.no === 0)
+                dbg("You'll spectate next.")
+              else if (data.no === 1)
+                dbg("You're playing! You start.")
+              else if (data.no === 2)
+                dbg("You're playing next! Opponent starts.")
               dbg(data.state)
             }
             else {
               var el = $('h1 span')
-              el.toggleClass('queued', (data.no > 1))
-              if (data.no > 1) {
-                el.text('Spectating, queued '+(data.no-1)+'.')
+              el.toggleClass('queued', (data.players < 2 || data.no > 1))
+              if (data.players < 2) {
+                el.text('Waiting for more players')
               }
               else {
-                el.toggleClass('wait', !data.move)
-                if (data.move)
-                  el.text('Your move')
-                else
-                  el.text("Opponent's move")
+                if (data.no > 1) {
+                  el.text('Spectating, queued '+(data.no-1)+'.')
+                }
+                else {
+                  el.toggleClass('wait', !data.move)
+                  if (data.move)
+                    el.text('Your move')
+                  else
+                    el.text("Opponent's move")
+                }
               }
             }
         }
