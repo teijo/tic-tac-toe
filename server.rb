@@ -175,6 +175,12 @@ server.run() do |ws|
       end
 
       move = JSON.parse(data)
+
+      if not /^[012]{1}$/ === move['x'].to_s() or not /^[012]{1}$/ === move['y'].to_s()
+        puts("Invalid move data")
+        next
+      end
+
       if game[move['x']][move['y']] == nil
         turn += 1
 
