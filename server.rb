@@ -1,3 +1,6 @@
+# Derived from web-socket-ruby echo server demo
+# https://github.com/gimite/web-socket-ruby/blob/master/samples/echo_server.rb
+# Original copyright:
 # Copyright: Hiroshi Ichikawa <http://gimite.net/en/>
 # Lincense: New BSD Lincense
 
